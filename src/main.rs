@@ -1,10 +1,17 @@
-use std::io;
-use std::net::{TcpListener, TcpStream};
+use std::net::{TcpListener};
+use std::io::{Write, Result, Read};
 
-fn main() {
-    let listener = TcpListener::bind("localhost:12345")?;
+fn main() -> Result<()> {
+    let listener = TcpListener::bind("127.0.0.1:12346")?;
+    println!("Bound!");
+    let mut buffer: [u8; 1024] = [0;1024];
     for stream in listener.incoming() {
-        stream?.write("Hello, World!");
+        println!("Client connected, writing");
+        let mut stream = stream?;
+        println!("Converted stream var");
+        stream.read(&mut buffer)?;
+        println!("Received {}", String::from_utf8_lossy(&buffer));
+        stream.write(&buffer)?;
     }
-
+    Ok(())
 }
