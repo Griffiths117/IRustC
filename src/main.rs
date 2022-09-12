@@ -1,26 +1,30 @@
 use std::net::{TcpListener, TcpStream, Shutdown};
 use std::io::{Write, Result, Read};
-fn echo(stream: &mut TcpStream, buf: &mut [u8]) -> Result<()> {
-    stream.read(buf)?;
-    stream.write(buf)?;
+fn echo(stream: &mut TcpStream) -> Result<String> {
+    let mut buffer: [u8; 1024] = [0;1024];
+    let buflen = stream.read(&mut buffer)?;
+    // Trim trailing NULL bytes and store as vector
+    let buffer = buffer[..buflen].to_vec();
+
+    stream.write(&buffer)?;
+    let str = String::from_utf8_lossy(&buffer);
     stream.shutdown(Shutdown::Both)?;
-    Ok(())
+    Ok(str.to_string())
 }
 fn main() -> Result<()> {
     let listener = TcpListener::bind("127.0.0.1:12346")?;
     println!("Bound!");
-    let mut buffer: [u8; 1024] = [0;1024];
     for stream in listener.incoming() {
-        let res = echo(&mut stream?, &mut buffer);
+        let res = echo(&mut stream?);
         if res.is_err(){
             eprintln!("Error {}", res.unwrap_err());
             continue;
         }
-        println!("Received {}", String::from_utf8_lossy(&buffer));
-        if buffer == [0; 1024] {
+        let msg = res.unwrap();
+        println!("Received: {} Len: {}", msg, msg.len());
+        if msg == "STOP" {
             break;
         }
-        buffer.fill(0);
     }
     println!("EXITING");
     Ok(())
