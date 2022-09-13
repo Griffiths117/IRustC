@@ -12,7 +12,7 @@ fn echo(stream: &mut TcpStream) -> Result<String> {
     Ok(str.to_string())
 }
 fn main() -> Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:12346")?;
+    let listener = TcpListener::bind("127.0.0.1:12345")?;
     println!("Bound!");
     for stream in listener.incoming() {
         let res = echo(&mut stream?);
